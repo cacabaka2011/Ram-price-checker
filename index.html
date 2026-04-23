@@ -34,21 +34,33 @@
     </div>
 
     <script>
-        // On ajoute un paramètre aléatoire (?v=...) pour forcer le rafraîchissement sans cache
         fetch('./data.json?v=' + new Date().getTime()) 
             .then(response => response.json())
             .then(jsonData => {
                 var options = {
-                    series: [{
-                        name: 'Prix (€)',
-                        data: jsonData 
-                    }],
+                    series: [{ name: 'Prix Moyen (€)', data: jsonData }],
                     chart: {
                         type: 'area',
-                        height: 350,
+                        height: 400,
                         foreColor: '#abb2bf',
-                        toolbar: { show: true },
-                        animations: { enabled: true }
+                        // --- CONFIGURATION DU ZOOM ---
+                        zoom: {
+                            enabled: true,
+                            type: 'x',  // Zoom sur l'axe horizontal
+                            autoScaleYaxis: true // Ajuste l'échelle de prix automatiquement au zoom
+                        },
+                        toolbar: {
+                            show: true,
+                            tools: {
+                                download: false, // On cache le téléchargement
+                                selection: true,
+                                zoom: true,
+                                zoomin: true,
+                                zoomout: true,
+                                pan: true, // Permet de déplacer le graphique quand on est zoomé
+                                reset: true // Bouton pour revenir à la vue totale
+                            }
+                        }
                     },
                     colors: ['#00ff88'], 
                     stroke: { curve: 'smooth', width: 3 },
@@ -56,25 +68,32 @@
                         type: 'gradient',
                         gradient: { shadeIntensity: 1, opacityFrom: 0.5, opacityTo: 0.1 }
                     },
-                    xaxis: { type: 'datetime' },
-                    yaxis: { 
-                        labels: { formatter: (value) => value.toFixed(2) + " €" }
+                    xaxis: { 
+                        type: 'datetime',
+                        tooltip: { enabled: false } // Cache le petit badge de date sur l'axe
                     },
-                    tooltip: { x: { format: 'dd MMM yyyy HH:mm' } }
+                    yaxis: { 
+                        labels: { formatter: (value) => value.toFixed(2) + " €" },
+                        forceNiceScale: true // Pour avoir des chiffres ronds sur l'axe
+                    },
+                    tooltip: { 
+                        theme: 'dark', 
+                        x: { format: 'dd MMM HH:mm' },
+                        y: { formatter: (val) => val.toFixed(2) + " €" }
+                    },
+                    // --- PETITE OPTION POUR LE LOOK ---
+                    dataLabels: { enabled: false },
+                    markers: { size: 0, hover: { size: 5 } } // Affiche un point quand on passe la souris
                 };
 
                 var chart = new ApexCharts(document.querySelector("#chart"), options);
                 chart.render();
             })
             .catch(err => {
-                document.querySelector("#chart").innerHTML = "En attente des premières données du robot...";
-                console.error(err);
+                document.querySelector("#chart").innerHTML = "<div style='padding:20px; text-align:center;'>Le robot prépare les données... Revenez dans 15 minutes !</div>";
             });
             
-        // Actualisation toutes les 15 minutes (plus logique si le robot tourne toutes les 15 min)
-        setInterval(function(){
-            location.reload(); 
-        }, 900000); // 900 000 ms = 15 minutes
+        setInterval(() => location.reload(), 900000);
     </script>
 </body>
 </html>
