@@ -2,37 +2,104 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Tracker Prix DDR5</title>
+    <title>RAM Tracker - Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
         body { 
             background: #121212; 
             color: #ffffff; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0;
+            padding: 20px;
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            padding-top: 50px;
         }
+
+        /* Conteneur du titre */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1 { color: #00ff88; margin-bottom: 10px; }
+        .subtitle { color: #888; font-size: 1.1em; }
+
+        /* Conteneur du graphique */
         #chart-container {
-            width: 90%;
-            max-width: 900px;
+            width: 95%;
+            max-width: 1000px;
             background: #1e1e1e;
             padding: 20px;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #333;
         }
-        h1 { color: #00ff88; text-align: center; margin-bottom: 30px; }
+
+        /* Section Infos / Explications */
+        .info-section {
+            width: 95%;
+            max-width: 1000px;
+            margin-top: 40px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #00ff88;
+        }
+
+        .card h3 { color: #00ff88; margin-top: 0; }
+        .card p { color: #ccc; line-height: 1.6; }
+
+        .footer {
+            margin-top: 50px;
+            color: #555;
+            font-size: 0.9em;
+            padding-bottom: 30px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Bourse du prix : RAM DDR5 32GB CL30 6000MHz</h1>
+    <div class="header">
+        <h1>Bourse RAM DDR5</h1>
+        <div class="subtitle">Suivi en temps réel des prix (32GB 6000MHz CL30)</div>
+    </div>
 
     <div id="chart-container">
         <div id="chart"></div>
     </div>
 
+    <div class="info-section">
+        <div class="card">
+            <h3>Pourquoi ce site ?</h3>
+            <p>
+                Les prix des composants informatiques varient chaque jour. Ce tracker a été créé pour identifier le meilleur moment pour acheter un kit de RAM DDR5 sans payer le prix fort.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Comment ça marche ?</h3>
+            <p>
+                Un robot (Python + Playwright) se connecte automatiquement toutes les 15 minutes sur Bing Shopping. Il analyse les résultats, calcule une moyenne des prix les plus pertinents et met à jour ce graphique.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Techno utilisées</h3>
+            <p>
+                Hébergé sur <strong>GitHub Pages</strong>. L'automatisation tourne via <strong>GitHub Actions</strong>. Le graphique est généré par la librairie <strong>ApexCharts</strong>.
+            </p>
+        </div>
+    </div>
+
+    <div class="footer">
+        Projet automatisé par mon Robot RAM • 2026
+    </div>
     <script>
         fetch('./data.json?v=' + new Date().getTime()) 
             .then(response => response.json())
