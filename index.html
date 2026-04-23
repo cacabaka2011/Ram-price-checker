@@ -100,6 +100,7 @@
     <div class="footer">
         Projet automatisé par mon Robot RAM • 2026
     </div>
+
     <script>
         fetch('./data.json?v=' + new Date().getTime()) 
             .then(response => response.json())
@@ -110,22 +111,22 @@
                         type: 'area',
                         height: 400,
                         foreColor: '#abb2bf',
-                        // --- CONFIGURATION DU ZOOM ---
+                        // --- CONFIGURATION DU ZOOM ACTIVE ---
                         zoom: {
                             enabled: true,
-                            type: 'x',  // Zoom sur l'axe horizontal
-                            autoScaleYaxis: true // Ajuste l'échelle de prix automatiquement au zoom
+                            type: 'x',
+                            autoScaleYaxis: true 
                         },
                         toolbar: {
                             show: true,
                             tools: {
-                                download: false, // On cache le téléchargement
+                                download: false,
                                 selection: true,
                                 zoom: true,
                                 zoomin: true,
                                 zoomout: true,
-                                pan: true, // Permet de déplacer le graphique quand on est zoomé
-                                reset: true // Bouton pour revenir à la vue totale
+                                pan: true,
+                                reset: true 
                             }
                         }
                     },
@@ -137,20 +138,19 @@
                     },
                     xaxis: { 
                         type: 'datetime',
-                        tooltip: { enabled: false } // Cache le petit badge de date sur l'axe
+                        tooltip: { enabled: false }
                     },
                     yaxis: { 
                         labels: { formatter: (value) => value.toFixed(2) + " €" },
-                        forceNiceScale: true // Pour avoir des chiffres ronds sur l'axe
+                        forceNiceScale: true
                     },
                     tooltip: { 
                         theme: 'dark', 
                         x: { format: 'dd MMM HH:mm' },
                         y: { formatter: (val) => val.toFixed(2) + " €" }
                     },
-                    // --- PETITE OPTION POUR LE LOOK ---
                     dataLabels: { enabled: false },
-                    markers: { size: 0, hover: { size: 5 } } // Affiche un point quand on passe la souris
+                    markers: { size: 0, hover: { size: 5 } }
                 };
 
                 var chart = new ApexCharts(document.querySelector("#chart"), options);
@@ -160,6 +160,7 @@
                 document.querySelector("#chart").innerHTML = "<div style='padding:20px; text-align:center;'>Le robot prépare les données... Revenez dans 15 minutes !</div>";
             });
             
+        // Rafraîchir toutes les 15 min
         setInterval(() => location.reload(), 900000);
     </script>
 </body>
