@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Tracker Prix DDR5</title>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        body { 
+            background: #121212; 
+            color: #ffffff; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding-top: 50px;
+        }
+        #chart-container {
+            width: 90%;
+            max-width: 900px;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        h1 { color: #00ff88; text-align: center; margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+
+    <h1>Bourse du prix : RAM DDR5 32GB CL30 6000MHz</h1>
+
+    <div id="chart-container">
+        <div id="chart"></div>
+    </div>
+
+    <script>
+        // On ajoute un paramètre aléatoire (?v=...) pour forcer le rafraîchissement sans cache
+        fetch('./data.json?v=' + new Date().getTime()) 
+            .then(response => response.json())
+            .then(jsonData => {
+                var options = {
+                    series: [{
+                        name: 'Prix (€)',
+                        data: jsonData 
+                    }],
+                    chart: {
+                        type: 'area',
+                        height: 350,
+                        foreColor: '#abb2bf',
+                        toolbar: { show: true },
+                        animations: { enabled: true }
+                    },
+                    colors: ['#00ff88'], 
+                    stroke: { curve: 'smooth', width: 3 },
+                    fill: {
+                        type: 'gradient',
+                        gradient: { shadeIntensity: 1, opacityFrom: 0.5, opacityTo: 0.1 }
+                    },
+                    xaxis: { type: 'datetime' },
+                    yaxis: { 
+                        labels: { formatter: (value) => value.toFixed(2) + " €" }
+                    },
+                    tooltip: { x: { format: 'dd MMM yyyy HH:mm' } }
+                };
+
+                var chart = new ApexCharts(document.querySelector("#chart"), options);
+                chart.render();
+            })
+            .catch(err => {
+                document.querySelector("#chart").innerHTML = "En attente des premières données du robot...";
+                console.error(err);
+            });
+            
+        // Actualisation toutes les 15 minutes (plus logique si le robot tourne toutes les 15 min)
+        setInterval(function(){
+            location.reload(); 
+        }, 900000); // 900 000 ms = 15 minutes
+    </script>
+</body>
+</html>
