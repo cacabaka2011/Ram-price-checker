@@ -1,0 +1,35 @@
+name: Mise a jour Prix RAM
+on:
+  schedule:
+    - cron: '*/15 * * * *' # Tourne toutes les 15 minutes
+  workflow_dispatch:      # Permet de le lancer a la main pour tester
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write    # Autorise le robot a modifier ton fichier data.json
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@v3
+
+      - name: Installer Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Installer Playwright et Chrome
+        run: |
+          pip install playwright
+          playwright install chromium
+
+      - name: Lancer le robot
+        run: python robot.py
+
+      - name: Sauvegarder les changements
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'actions@github.com'
+          git add data.json
+          git commit -m "MAJ Prix Auto" || exit 0
+          git push
