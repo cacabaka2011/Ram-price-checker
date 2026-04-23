@@ -1,7 +1,7 @@
 name: Mise a jour Prix RAM
 on:
   schedule:
-    - cron: '*/15 * * * *' # Tourne toutes les 15 minutes
+    - cron: '*/5 * * * *' # Tourne toutes les 5 minutes
   workflow_dispatch:      # Permet de le lancer a la main pour tester
 
 jobs:
