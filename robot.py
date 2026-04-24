@@ -37,7 +37,7 @@ def executer_releve():
             prix_valides = []
             for p_str in trouvailles:
                 val = float(p_str.replace(',', '.'))
-                # FILTRE MIS A JOUR : 80€ a 400€ (plus realiste pour de la RAM)
+                # FILTRE : 80€ a 700€
                 if 80 <= val <= 700:
                     prix_valides.append(val)
 
@@ -63,8 +63,12 @@ def executer_releve():
                 
                 print(f"SUCCES : Moyenne de {moyenne}€ enregistree ({len(prix_uniques)} prix trouves).")
             else:
-                print("ECHEC : Aucun prix detecte dans la zone 80€-400€.")
+                print("ECHEC : Aucun prix detecte dans la zone 80€-700€.")
+                # --- SAUVEGARDE DES PREUVES POUR LE DÉBOGAGE ---
                 page.screenshot(path="debug_screenshot.png")
+                with open("debug_page.html", "w", encoding="utf-8") as f:
+                    f.write(content)
+                print("Preuves sauvegardees : debug_screenshot.png et debug_page.html")
             
             browser.close()
     except Exception as e:
