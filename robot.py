@@ -13,7 +13,7 @@ def executer_releve():
 
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(headless=False)
             
             # LE DÉGUISEMENT EST ICI : On fait croire qu'on est sur Google Chrome sous Windows 10
             context = browser.new_context(
