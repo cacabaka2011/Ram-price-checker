@@ -78,21 +78,21 @@
         <div class="card">
             <h3>Pourquoi ce site ?</h3>
             <p>
-                L'IA a prit controle du marcher de la RAM, surtout la ddr5. mon but est de faire un bourse (elle marche qu'a long terme, cela varie de l'algorythme) en bref si vous voulez acheter de la ram checker ce cite pour voir si les prix descendent.
+                L'IA a pris le contrôle du marché de la RAM, surtout la DDR5. Mon but est de créer une "bourse" (qui fonctionne sur le long terme, selon l'algorithme). En bref, si vous voulez acheter de la RAM, consultez ce site pour voir si les prix sont en baisse.
             </p>
         </div>
 
         <div class="card">
             <h3>Comment ça marche ?</h3>
             <p>
-                Ce projet fonctionne grace a PYTHON et playwright, le robot.py regarde les 5 premières offres sur bing shopping car Bing ne regarde pas si t'es un robot. le robot envoie l'info chez data.json et le site html a un script intégrer pour regarder si data.json a le prix
+                Ce projet fonctionne grâce à Python et Playwright. Le fichier <code>robot.py</code> analyse les offres sur Bing Shopping. Le robot envoie ensuite les informations dans un fichier <code>data.json</code>, et cette page web lit ce fichier pour mettre à jour le graphique automatiquement.
             </p>
         </div>
 
         <div class="card">
-            <h3>Techno utilisées</h3>
+            <h3>Technos utilisées</h3>
             <p>
-                Principalement utilisé VSC au début mais heberge <strong>GitHub Pages</strong>. L'automatisation tourne via <strong>GitHub Actions</strong>. Le graphique est généré par la librairie <strong>ApexCharts</strong>. J'ai été aider par Gemini mais j'ai modifier la page web moi même
+                Code développé sur VSC au début, puis hébergé sur <strong>GitHub Pages</strong>. L'automatisation tourne via <strong>GitHub Actions</strong>. Le graphique est généré par <strong>ApexCharts</strong>. J'ai été aidé par Gemini, mais j'ai personnalisé et adapté la page web moi-même.
             </p>
         </div>
     </div>
@@ -102,16 +102,23 @@
     </div>
 
     <script>
+        // Le ?v=... permet de forcer le site à prendre le nouveau fichier et ignorer le cache
         fetch('./data.json?v=' + new Date().getTime()) 
             .then(response => response.json())
             .then(jsonData => {
+                
+                // NOUVEAU : Si le fichier existe mais qu'il est vide (0 donnée)
+                if (jsonData.length === 0) {
+                    document.querySelector("#chart").innerHTML = "<div style='padding:40px; text-align:center; color: #ffaa00; font-size: 1.2em;'>Le fichier de données est vide. En attente du premier relevé réussi par le robot...</div>";
+                    return; // On arrête le script ici
+                }
+
                 var options = {
                     series: [{ name: 'Prix Moyen (€)', data: jsonData }],
                     chart: {
                         type: 'area',
                         height: 400,
                         foreColor: '#abb2bf',
-                        // --- CONFIGURATION DU ZOOM ACTIVE ---
                         zoom: {
                             enabled: true,
                             type: 'x',
@@ -157,7 +164,7 @@
                 chart.render();
             })
             .catch(err => {
-                document.querySelector("#chart").innerHTML = "<div style='padding:20px; text-align:center;'>Le robot prépare les données... Revenez dans 15 minutes !</div>";
+                document.querySelector("#chart").innerHTML = "<div style='padding:40px; text-align:center; color: #ff4444; font-size: 1.2em;'>Le fichier data.json est introuvable. Attendez que le robot fasse sa première récolte !</div>";
             });
             
         // Rafraîchir toutes les 15 min
