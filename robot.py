@@ -4,44 +4,54 @@ import time
 import re
 import os
 
-# Lien optimisé
-SEARCH_URL = "https://www.bing.com/search?q=ram+ddr5+32gb+6000mhz+cl30+price"
+# CIBLE : eBay France (Objets Neufs)
+SEARCH_URL = "https://www.ebay.fr/sch/i.html?_nkw=ram+ddr5+32gb+6000mhz&LH_ItemCondition=1000"
 
 def executer_releve():
-    print(f"[{time.strftime('%H:%M:%S')}] Lancement du releve...")
+    print(f"[{time.strftime('%H:%M:%S')}] Lancement du releve sur eBay...")
 
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
+            
+            # 1. LE REGLAGE FRANÇAIS (Mieux qu'un clic)
             context = browser.new_context(
                 viewport={'width': 1920, 'height': 1080},
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                locale="fr-FR", # Force le site en Français
+                extra_http_headers={"Accept-Language": "fr-FR,fr;q=0.9"} # Sécurité anti-anglais
             )
             
             page = context.new_page()
-            # On simule un vrai comportement
             page.goto(SEARCH_URL, wait_until="domcontentloaded")
-            time.sleep(5)
+            time.sleep(3)
             
-            # Gestion cookies
+            # Gestion cookies eBay
             try:
-                page.locator("#bnp_btn_accept, button:has-text('Accepter'), .bnp_btn_accept").first.click(timeout=3000)
+                page.locator("#gdpr-banner-accept").click(timeout=3000)
+                print("Cookies acceptes.")
             except: pass
 
-            # Extraction plus large : on prend les chiffres suivis de € ou EUR
+            # 2. LE SCROLL (Pour simuler un humain et charger les images/prix)
+            print("Simulation de l'humain : defilement de la page...")
+            for _ in range(4): # Appuie 4 fois sur "Page Suivante"
+                page.keyboard.press("PageDown")
+                time.sleep(1.5) # Pause entre chaque scroll
+
             content = page.content()
-            # Regex qui accepte 120, 120.50 ou 120,50
-            regex_prix = r"(\d{2,3}(?:[,\.]\d{2})?)\s*(?:€|EUR)"
+            
+            # Extraction des prix
+            regex_prix = r"(\d{2,3}[,\.]\d{2})\s*(?:€|EUR)"
             trouvailles = re.findall(regex_prix, content)
             
             prix_valides = []
             for p_str in trouvailles:
                 val = float(p_str.replace(',', '.'))
-                # FILTRE : 80€ a 700€
-                if 80 <= val <= 700:
+                if 80 <= val <= 400:
                     prix_valides.append(val)
 
-            prix_uniques = list(dict.fromkeys(prix_valides))[:8]
+            # 3. ON PREND LES 10 PREMIERS OFFRES (au lieu de 5)
+            prix_uniques = list(dict.fromkeys(prix_valides))[:10]
 
             if prix_uniques:
                 moyenne = round(sum(prix_uniques) / len(prix_uniques), 2)
@@ -55,24 +65,21 @@ def executer_releve():
                 
                 data.append([timestamp, moyenne])
                 
-                # On ne garde que les 100 derniers points pour pas que le fichier soit trop lourd
                 if len(data) > 100: data = data[-100:]
                 
                 with open('data.json', 'w') as f:
                     json.dump(data, f)
                 
-                print(f"SUCCES : Moyenne de {moyenne}€ enregistree ({len(prix_uniques)} prix trouves).")
+                print(f"SUCCES : Moyenne de {moyenne}€ calculee sur les {len(prix_uniques)} premiers prix eBay.")
             else:
-                print("ECHEC : Aucun prix detecte dans la zone 80€-700€.")
-                # --- SAUVEGARDE DES PREUVES POUR LE DÉBOGAGE ---
+                print("ECHEC : Aucun prix detecte sur eBay.")
                 page.screenshot(path="debug_screenshot.png")
                 with open("debug_page.html", "w", encoding="utf-8") as f:
                     f.write(content)
-                print("Preuves sauvegardees : debug_screenshot.png et debug_page.html")
             
             browser.close()
     except Exception as e:
-        print(f"ERREUR CRITIQUE : {e}")
+        print(f"ERREUR : {e}")
 
 if __name__ == "__main__":
     executer_releve()
