@@ -4,86 +4,71 @@ import time
 import re
 import os
 
-# Ton lien Bing
-SEARCH_URL = "https://www.bing.com/search?q=ram%20ddr5%2032gb&qs=n&form=QBRE&sp=-1&lq=0&pq=ram%20ddr5%2032gb&sc=12-13&sk=&cvid=09914EBAAAA2421498C78DA6C802E7D5"
+# Lien optimisé
+SEARCH_URL = "https://www.bing.com/search?q=ram+ddr5+32gb+6000mhz+cl30+price"
 
 def executer_releve():
-    heure_actuelle = time.strftime('%H:%M:%S')
-    print(f"[{heure_actuelle}] Lancement du releve sur les serveurs GitHub...")
+    print(f"[{time.strftime('%H:%M:%S')}] Lancement du releve...")
 
     try:
         with sync_playwright() as p:
-            # HEADLESS=TRUE EST OBLIGATOIRE SUR GITHUB (pas d'écran sur les serveurs)
             browser = p.chromium.launch(headless=True)
-            
-            # LE DÉGUISEMENT
             context = browser.new_context(
-                locale="fr-BE",
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+                viewport={'width': 1920, 'height': 1080},
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
             )
             
             page = context.new_page()
-            page.goto(SEARCH_URL, wait_until="networkidle")
+            # On simule un vrai comportement
+            page.goto(SEARCH_URL, wait_until="domcontentloaded")
+            time.sleep(5)
             
-            # Clic Cookies
+            # Gestion cookies
             try:
-                btn = page.locator("#bnp_btn_accept, button:has-text('Accepter')").first
-                btn.click(timeout=5000)
-            except:
-                pass
+                page.locator("#bnp_btn_accept, button:has-text('Accepter'), .bnp_btn_accept").first.click(timeout=3000)
+            except: pass
 
-            time.sleep(6) 
+            # Extraction plus large : on prend les chiffres suivis de € ou EUR
             content = page.content()
-            
-            # Extraction des prix
-            regex_prix = r"(\d{2,3}[,\.]\d{2})\s*€"
+            # Regex qui accepte 120, 120.50 ou 120,50
+            regex_prix = r"(\d{2,3}(?:[,\.]\d{2})?)\s*(?:€|EUR)"
             trouvailles = re.findall(regex_prix, content)
             
             prix_valides = []
             for p_str in trouvailles:
                 val = float(p_str.replace(',', '.'))
-                # Filtre de securite 200€ - 750€
-                if 200 <= val <= 750:
+                # FILTRE MIS A JOUR : 80€ a 400€ (plus realiste pour de la RAM)
+                if 80 <= val <= 700:
                     prix_valides.append(val)
 
-            prix_uniques = list(dict.fromkeys(prix_valides))[:5]
+            prix_uniques = list(dict.fromkeys(prix_valides))[:8]
 
             if prix_uniques:
                 moyenne = round(sum(prix_uniques) / len(prix_uniques), 2)
-                
-                # Fix Heure UTC+2 (Bruxelles/Paris)
-                timestamp_local = int((time.time() + 7200) * 1000)
+                timestamp = int((time.time() + 7200) * 1000)
                 
                 if os.path.exists('data.json'):
                     with open('data.json', 'r') as f:
-                        try:
-                            data = json.load(f)
-                        except:
-                            data = []
-                else:
-                    data = []
+                        try: data = json.load(f)
+                        except: data = []
+                else: data = []
                 
-                data.append([timestamp_local, moyenne])
+                data.append([timestamp, moyenne])
+                
+                # On ne garde que les 100 derniers points pour pas que le fichier soit trop lourd
+                if len(data) > 100: data = data[-100:]
                 
                 with open('data.json', 'w') as f:
                     json.dump(data, f)
                 
-                print(f"Succès ! Moyenne de {moyenne}€ ajoutée à data.json")
+                print(f"SUCCES : Moyenne de {moyenne}€ enregistree ({len(prix_uniques)} prix trouves).")
             else:
-                print("Problème technique, aucun prix trouvé.")
-                print("Prise de la photo en cours pour voir ce que Bing affiche...")
-                
-                # --- LA PARTIE PHOTO EST ICI ---
+                print("ECHEC : Aucun prix detecte dans la zone 80€-400€.")
                 page.screenshot(path="debug_screenshot.png")
-                with open("debug_page.html", "w", encoding="utf-8") as f:
-                    f.write(content)
-                    
-                print("Voici un aperçu de ce que le robot a vu :")
-                print(content[:600]) 
             
             browser.close()
     except Exception as e:
-        print(f"Erreur : {e}")
+        print(f"ERREUR CRITIQUE : {e}")
 
 if __name__ == "__main__":
     executer_releve()
