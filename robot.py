@@ -13,9 +13,14 @@ def executer_releve():
 
     try:
         with sync_playwright() as p:
-            # headless=True est OBLIGATOIRE sur GitHub
             browser = p.chromium.launch(headless=True)
-            context = browser.new_context(locale="fr-BE")
+            
+            # LE DÉGUISEMENT EST ICI : On fait croire qu'on est sur Google Chrome sous Windows 10
+            context = browser.new_context(
+                locale="fr-BE",
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+            )
+            
             page = context.new_page()
             page.goto(SEARCH_URL, wait_until="networkidle")
             
@@ -48,7 +53,6 @@ def executer_releve():
                 # Fix Heure UTC+2 (Bruxelles/Paris)
                 timestamp_local = int((time.time() + 7200) * 1000)
                 
-                # Lecture du fichier data.json existant sur GitHub
                 if os.path.exists('data.json'):
                     with open('data.json', 'r') as f:
                         try:
@@ -58,21 +62,21 @@ def executer_releve():
                 else:
                     data = []
                 
-                # Ajout de la nouvelle donnée
                 data.append([timestamp_local, moyenne])
                 
-                # Sauvegarde locale (GitHub Actions l'enverra ensuite sur ton dépôt)
                 with open('data.json', 'w') as f:
                     json.dump(data, f)
                 
                 print(f"Succès ! Moyenne de {moyenne}€ ajoutée à data.json")
             else:
-                print("Problème technique, aucun prix trouvé.")
+                print("Problème technique, aucun prix trouvé. Bing nous a peut-être bloqués.")
+                # On imprime un bout du code de la page pour voir le problème
+                print("Voici un aperçu de ce que le robot a vu :")
+                print(content[:600]) 
             
             browser.close()
     except Exception as e:
         print(f"Erreur : {e}")
 
 if __name__ == "__main__":
-    # On l'execute une seule fois (GitHub s'occupe de le relancer)
     executer_releve()
