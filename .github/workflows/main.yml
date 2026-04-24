@@ -1,20 +1,25 @@
 name: Mise a jour Prix RAM
 on:
   schedule:
-    - cron: '*/5 * * * *' # Tourne toutes les 5 minutes
-  workflow_dispatch:      # Permet de le lancer a la main pour tester
+    - cron: '*/5 * * * *' # Check toutes les 5 minutes
+  workflow_dispatch:
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
     permissions:
-      contents: write    # Autorise le robot a modifier ton fichier data.json
+      contents: write
+      
+    # --- LA COMMANDE PRO POUR FORCER NODE.JS 24 ---
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      
     steps:
-      - name: Recuperer le code
-        uses: actions/checkout@v4  # Mise à jour v3 -> v4
+      - name: Recuperer le code (Version Node 24 Ready)
+        uses: actions/checkout@v4
 
-      - name: Installer Python
-        uses: actions/setup-python@v5  # Mise à jour v4 -> v5
+      - name: Installer Python (Version Node 24 Ready)
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
