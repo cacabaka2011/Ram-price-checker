@@ -5,7 +5,7 @@ import re
 import os
 
 # CIBLE : eBay France (Objets Neufs)
-SEARCH_URL = "https://www.ebay.fr/sch/i.html?_nkw=ram+ddr5+32gb+6000mhz&LH_ItemCondition=1000"
+SEARCH_URL = "https://www.befr.ebay.be/sch/i.html?_nkw=ram+ddr5+cl30+6000mhz+32+gb&_sacat=0&_from=R40&_trksid=p4624852.m570.l1313"
 
 def executer_releve():
     print(f"[{time.strftime('%H:%M:%S')}] Lancement du releve sur eBay...")
