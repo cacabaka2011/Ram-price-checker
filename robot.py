@@ -13,9 +13,10 @@ def executer_releve():
 
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=False)
+            # HEADLESS=TRUE EST OBLIGATOIRE SUR GITHUB (pas d'écran sur les serveurs)
+            browser = p.chromium.launch(headless=True)
             
-            # LE DÉGUISEMENT EST ICI : On fait croire qu'on est sur Google Chrome sous Windows 10
+            # LE DÉGUISEMENT
             context = browser.new_context(
                 locale="fr-BE",
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
@@ -69,8 +70,14 @@ def executer_releve():
                 
                 print(f"Succès ! Moyenne de {moyenne}€ ajoutée à data.json")
             else:
-                print("Problème technique, aucun prix trouvé. Bing nous a peut-être bloqués.")
-                # On imprime un bout du code de la page pour voir le problème
+                print("Problème technique, aucun prix trouvé.")
+                print("Prise de la photo en cours pour voir ce que Bing affiche...")
+                
+                # --- LA PARTIE PHOTO EST ICI ---
+                page.screenshot(path="debug_screenshot.png")
+                with open("debug_page.html", "w", encoding="utf-8") as f:
+                    f.write(content)
+                    
                 print("Voici un aperçu de ce que le robot a vu :")
                 print(content[:600]) 
             
